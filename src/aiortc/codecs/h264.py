@@ -1,5 +1,6 @@
 import fractions
 import logging
+import traceback
 import math
 from itertools import tee
 from struct import pack, unpack_from
@@ -123,6 +124,7 @@ class H264Decoder(Decoder):
 def create_encoder_context(
     codec_name: str, width: int, height: int, bitrate: int
 ) -> Tuple[av.CodecContext, bool]:
+    logging.info(f"Using codec {codec_name}")
     codec = av.CodecContext.create(codec_name, "w")
     codec.width = width
     codec.height = height
@@ -130,11 +132,11 @@ def create_encoder_context(
     codec.pix_fmt = "yuv420p"
     codec.framerate = fractions.Fraction(MAX_FRAME_RATE, 1)
     codec.time_base = fractions.Fraction(1, MAX_FRAME_RATE)
-    codec.options = {
-        "profile": "baseline",
-        "level": "31",
-        "tune": "zerolatency",  # does nothing using h264_omx
-    }
+    # codec.options = {
+    #     "tune": "hq",
+    #     "rc": "cbr_hq"
+    # }
+    logging.info(f"{codec.options}")
     codec.open()
     return codec, codec_name == "h264_omx"
 
@@ -145,7 +147,7 @@ class H264Encoder(Encoder):
         self.buffer_pts: Optional[int] = None
         self.codec: Optional[av.CodecContext] = None
         self.codec_buffering = False
-        self.__target_bitrate = DEFAULT_BITRATE
+        self.__target_bitrate = 5 * 1024 * 1024 # DEFAULT_BITRATE
 
     @staticmethod
     def _packetize_fu_a(data: bytes) -> List[bytes]:
@@ -280,9 +282,11 @@ class H264Encoder(Encoder):
         if self.codec is None:
             try:
                 self.codec, self.codec_buffering = create_encoder_context(
-                    "h264_omx", frame.width, frame.height, bitrate=self.target_bitrate
+                    "h264_nvenc", frame.width, frame.height, bitrate=self.target_bitrate
                 )
-            except Exception:
+            except Exception as e:
+                logging.info(f"Exception when creating encoder: {str(e)}")
+                traceback.print_exc()
                 self.codec, self.codec_buffering = create_encoder_context(
                     "libx264",
                     frame.width,

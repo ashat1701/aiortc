@@ -250,7 +250,7 @@ class RTCRtpSender:
                 bitrate, ssrcs = unpack_remb_fci(packet.fci)
                 if self._ssrc in ssrcs:
                     if self.__encoder and hasattr(self.__encoder, "target_bitrate"):
-                        self.__encoder.target_bitrate = bitrate
+                        pass
             except ValueError:
                 pass
 
