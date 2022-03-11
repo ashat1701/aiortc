@@ -211,6 +211,7 @@ class RTCRtpSender:
             await asyncio.gather(self.__rtp_exited.wait(), self.__rtcp_exited.wait())
 
             if self.__encoder is not None:
+                logger.info(f"RTCRtpsender deleting encoder")
                 del self.__encoder
 
     async def _handle_rtcp_packet(self, packet):
