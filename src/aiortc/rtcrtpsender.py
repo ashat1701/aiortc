@@ -201,6 +201,11 @@ class RTCRtpSender:
         """
         Irreversibly stop the sender.
         """
+        logger.info(f"Self.encoder is None = {self.__encoder is None}")
+        if self.__encoder is not None:
+            logger.info(f"RTCRtpsender deleting encoder")
+            del self.__encoder
+        logger.info(f"Sender started = {self.__started}")
         if self.__started:
             self.__transport._unregister_rtp_sender(self)
 
@@ -209,10 +214,6 @@ class RTCRtpSender:
             self.__rtp_task.cancel()
             self.__rtcp_task.cancel()
             await asyncio.gather(self.__rtp_exited.wait(), self.__rtcp_exited.wait())
-
-            if self.__encoder is not None:
-                logger.info(f"RTCRtpsender deleting encoder")
-                del self.__encoder
 
     async def _handle_rtcp_packet(self, packet):
         if isinstance(packet, (RtcpRrPacket, RtcpSrPacket)):

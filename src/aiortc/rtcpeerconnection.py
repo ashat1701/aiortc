@@ -464,6 +464,7 @@ class RTCPeerConnection(AsyncIOEventEmitter):
         """
         Terminate the ICE agent, ending ICE processing and streams.
         """
+        logger.info("Closing PC")
         if self.__isClosed:
             return
         self.__isClosed = True
@@ -471,17 +472,21 @@ class RTCPeerConnection(AsyncIOEventEmitter):
 
         # stop senders / receivers
         for transceiver in self.__transceivers:
+            logger.info("Stopping transceiver")
             await transceiver.stop()
         if self.__sctp:
             await self.__sctp.stop()
+        logger.info("Stopped transceivers and sctp")
 
         # stop transports
         for transceiver in self.__transceivers:
+            logger.info("Stopping transports")
             await transceiver._transport.stop()
             await transceiver._transport.transport.stop()
         if self.__sctp:
             await self.__sctp.transport.stop()
             await self.__sctp.transport.transport.stop()
+        logger.info("Stopped transports and sctp")
 
         # update states
         self.__updateIceGatheringState()

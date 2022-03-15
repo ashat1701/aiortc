@@ -125,8 +125,11 @@ class RTCRtpTransceiver:
         """
         Permanently stops the :class:`RTCRtpTransceiver`.
         """
+        logger.info("Stopping receiver")
         await self.__receiver.stop()
+        logger.info("Stopping sender")
         await self.__sender.stop()
+        logger.info("Stopped all")
         self.__stopped = True
 
     def _set_mid(self, mid: str) -> None:
