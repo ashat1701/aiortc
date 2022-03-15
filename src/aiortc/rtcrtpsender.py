@@ -201,12 +201,13 @@ class RTCRtpSender:
         """
         Irreversibly stop the sender.
         """
-        logger.info(f"Self.encoder is None = {self.__encoder is None}")
-        if self.__encoder is not None:
-            logger.info(f"RTCRtpsender deleting encoder")
-            del self.__encoder
         logger.info(f"Sender started = {self.__started}")
         if self.__started:
+            logger.info(f"Self.encoder is None = {self.__encoder is None}")
+            if self.__encoder is not None:
+                logger.info(f"RTCRtpsender deleting encoder")
+                del self.__encoder
+                self.__encoder = None
             self.__transport._unregister_rtp_sender(self)
 
             # shutdown RTP and RTCP tasks
